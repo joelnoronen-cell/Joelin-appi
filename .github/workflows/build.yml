@@ -30,3 +30,53 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             build | tee build.log | grep -E "error:|warning:|BUILD" || true
           grep -q "BUILD SUCCEEDED" build.log
+
+  ipa:
+    name: Unsigned IPA for sideloading
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select newest Xcode 26
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+          if [ -n "$XCODE" ]; then sudo xcode-select -s "$XCODE"; fi
+          xcodebuild -version
+
+      - name: Build for iPhone (unsigned)
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project Jarvis.xcodeproj \
+            -target Jarvis \
+            -sdk iphoneos \
+            -configuration Release \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build | tee build.log | grep -E "error:|BUILD" || true
+          grep -q "BUILD SUCCEEDED" build.log
+
+      - name: Package Jarvis.ipa
+        run: |
+          mkdir -p Payload
+          cp -R build/Release-iphoneos/Jarvis.app Payload/
+          zip -qry Jarvis.ipa Payload
+          ls -la Jarvis.ipa
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Jarvis-ipa
+          path: Jarvis.ipa
+
+  web:
+    name: Web app logic tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test web/tests/core.test.mjs
