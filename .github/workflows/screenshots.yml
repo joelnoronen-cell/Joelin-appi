@@ -1,0 +1,68 @@
+name: Screenshots
+
+# Runs on demand, or on a push whose commit message contains "[screenshots]".
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  screenshots:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[screenshots]')
+    name: Simulator screenshots
+    runs-on: macos-26
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select newest Xcode 26
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+          if [ -n "$XCODE" ]; then sudo xcode-select -s "$XCODE"; fi
+          xcodebuild -version
+
+      - name: Build
+        run: |
+          set -o pipefail
+          xcodebuild -project Jarvis.xcodeproj -target Jarvis -sdk iphonesimulator \
+            -configuration Debug CODE_SIGNING_ALLOWED=NO build | tail -3
+
+      - name: Boot simulator
+        run: |
+          UDID=$(xcrun simctl list devices available -j | python3 -c '
+          import json, sys
+          devices = json.load(sys.stdin)["devices"]
+          runtimes = sorted((r for r in devices if "iOS" in r), reverse=True)
+          picks = [d for r in runtimes for d in devices[r] if d["name"].startswith("iPhone")]
+          pro = [d for d in picks if "Pro" in d["name"] and "Max" not in d["name"]]
+          print((pro or picks)[0]["udid"])
+          ')
+          echo "UDID=$UDID" >> "$GITHUB_ENV"
+          xcrun simctl boot "$UDID"
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl install "$UDID" build/Debug-iphonesimulator/Jarvis.app
+
+      - name: Capture
+        run: |
+          mkdir -p shots
+          shoot() {
+            name=$1; shift
+            xcrun simctl terminate "$UDID" com.joelin.jarvis 2>/dev/null || true
+            sleep 1
+            xcrun simctl launch "$UDID" com.joelin.jarvis "$@"
+            sleep 7
+            xcrun simctl io "$UDID" screenshot "shots/$name.png"
+          }
+          xcrun simctl ui "$UDID" appearance dark
+          shoot 1-today-dark -JarvisSeedSampleData YES -JarvisTab today -JarvisOpenAsk NO
+          shoot 2-week-dark -JarvisTab week -JarvisOpenAsk NO
+          shoot 3-ask-dark -JarvisTab today -JarvisOpenAsk YES
+          xcrun simctl ui "$UDID" appearance light
+          shoot 4-today-light -JarvisTab today -JarvisOpenAsk NO
+          shoot 5-week-light -JarvisTab week -JarvisOpenAsk NO
+          shoot 6-settings-light -JarvisTab settings -JarvisOpenAsk NO
+          ls -la shots
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: shots
