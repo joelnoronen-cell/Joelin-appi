@@ -92,10 +92,7 @@ struct AskJarvisView: View {
                 }
             }
         }
-        .onAppear {
-            greetIfNeeded()
-            inputFocused = true
-        }
+        .onAppear(perform: greetIfNeeded)
     }
 
     // MARK: - Composer

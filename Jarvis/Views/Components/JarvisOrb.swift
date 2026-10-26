@@ -28,13 +28,13 @@ struct JarvisOrb: View {
         let breathe = 1 + (isActive ? 0.06 : 0.025) * sin(t * (isActive ? 7 : 1.6))
 
         return ZStack {
-            // Outer glow.
+            // Outer glow, kept inside the glass so the rim and rings stay crisp.
             Circle()
                 .fill(AngularGradient(colors: Self.palette, center: .center))
                 .rotationEffect(.radians(t * speed))
-                .blur(radius: size * 0.16)
-                .scaleEffect(1.05 * breathe)
-                .opacity(isActive ? 1 : 0.85)
+                .blur(radius: size * 0.12)
+                .scaleEffect((isActive ? 0.95 : 0.84) * breathe)
+                .opacity(isActive ? 1 : 0.8)
 
             // Counter-rotating plasma core.
             Circle()

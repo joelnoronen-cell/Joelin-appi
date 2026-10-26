@@ -6,6 +6,17 @@ everything moving with smooth, physics-based animation.
 
 <p align="center"><img src="Jarvis/Assets.xcassets/AppIcon.appiconset/AppIcon.png" width="160" alt="Jarvis app icon"></p>
 
+<p align="center">
+  <img src="docs/screenshots/1-today-dark.png" width="240" alt="Today, dark">
+  <img src="docs/screenshots/2-week-dark.png" width="240" alt="Week, dark">
+  <img src="docs/screenshots/3-ask-dark.png" width="240" alt="Ask Jarvis, dark">
+</p>
+<p align="center">
+  <img src="docs/screenshots/4-today-light.png" width="240" alt="Today, light">
+  <img src="docs/screenshots/5-week-light.png" width="240" alt="Week, light">
+  <img src="docs/screenshots/6-settings-light.png" width="240" alt="Settings, light">
+</p>
+
 ## Features
 
 **Today**
@@ -78,4 +89,5 @@ Jarvis/
 
 The project uses Xcode's synchronized folders, so new files in `Jarvis/` are picked up
 automatically. CI builds the app for the iOS Simulator on every push
-(`.github/workflows/build.yml`).
+(`.github/workflows/build.yml`). To refresh the screenshots above, run the *Screenshots*
+workflow or push a commit whose message contains `[screenshots]`.

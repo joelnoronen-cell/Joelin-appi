@@ -5,7 +5,7 @@ import SwiftUI
 /// is stable because hidden characters are drawn clear rather than removed.
 struct TypewriterText: View {
     let text: String
-    var characterDelay: Duration = .milliseconds(14)
+    var characterDelay: Duration = .milliseconds(16)
 
     @State private var visibleCount = 0
     @State private var hasFinished = false
@@ -34,9 +34,12 @@ struct TypewriterText: View {
             hasFinished = true
             return
         }
+        // Reveal a few characters per frame so long briefings still finish
+        // in about a second and a half.
+        let step = max(1, Int((Double(text.count) / 90).rounded(.up)))
         visibleCount = 0
-        for count in 0...text.count {
-            visibleCount = count
+        while visibleCount < text.count {
+            visibleCount = min(visibleCount + step, text.count)
             do {
                 try await Task.sleep(for: characterDelay)
             } catch {
