@@ -39,8 +39,9 @@ struct AskJarvisView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
-                    JarvisOrb(size: 112, isActive: isThinking || store.voice.isSpeaking)
-                        .padding(.vertical, 34)
+                    JarvisOrb(size: 104, isActive: isThinking || store.voice.isSpeaking)
+                        .padding(.top, 20)
+                        .padding(.bottom, 26)
 
                     ForEach(messages) { message in
                         MessageBubble(
@@ -79,7 +80,6 @@ struct AskJarvisView: View {
                 composer
             }
             .background { AuroraBackground() }
-            .navigationTitle("Jarvis")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -441,9 +441,9 @@ private struct SuggestionGrid: View {
                 Button {
                     onPick(suggestion)
                 } label: {
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: 6) {
                         Image(systemName: suggestion.symbol)
-                            .font(.headline)
+                            .font(.subheadline.weight(.semibold))
                             .foregroundStyle(suggestion.tint)
                         Text(suggestion.text)
                             .font(.subheadline.weight(.medium))
@@ -452,8 +452,8 @@ private struct SuggestionGrid: View {
                             .fixedSize(horizontal: false, vertical: true)
                         Spacer(minLength: 0)
                     }
-                    .frame(maxWidth: .infinity, minHeight: 92, alignment: .topLeading)
-                    .padding(14)
+                    .frame(maxWidth: .infinity, minHeight: 66, alignment: .topLeading)
+                    .padding(12)
                     .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 22))
                     .contentShape(.rect(cornerRadius: 22))
                 }
